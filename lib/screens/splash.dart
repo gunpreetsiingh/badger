@@ -1,4 +1,5 @@
 import 'package:badger/screens/authentication.dart';
+import 'package:badger/screens/dashboard.dart';
 import 'package:flutter/material.dart';
 
 class Splash extends StatefulWidget {
@@ -19,10 +20,10 @@ class _SplashState extends State<Splash> {
   }
 
   void navigate() async {
-    await Future.delayed(Duration(milliseconds: 2500));
+    await Future.delayed(Duration(milliseconds: 2500)); // 2500
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => Authentication(),
+        builder: (context) => Dashboard(),
       ),
     );
   }
@@ -45,7 +46,7 @@ class _SplashState extends State<Splash> {
               width: size.width,
             ),
             Container(
-              width: 135,
+              width: 140,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -58,7 +59,9 @@ class _SplashState extends State<Splash> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 15,),
+                  SizedBox(
+                    height: 15,
+                  ),
                   LinearProgressIndicator(
                     color: Colors.black,
                     backgroundColor: Colors.black.withOpacity(0.30),
