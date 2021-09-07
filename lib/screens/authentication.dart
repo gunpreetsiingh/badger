@@ -14,6 +14,8 @@ class _AuthenticationState extends State<Authentication> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  bool isProcessing = false;
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -22,12 +24,18 @@ class _AuthenticationState extends State<Authentication> {
   }
 
   void registerUser() async {
+    setState(() {
+      isProcessing = true;
+    });
     try {
       UserCredential userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text,
         password: _passwordController.text,
       );
+      setState(() {
+        isProcessing = false;
+      });
       // create an account here
       Navigator.of(context).pushNamed('/dashboard');
     } on FirebaseAuthException catch (e) {
@@ -49,6 +57,9 @@ class _AuthenticationState extends State<Authentication> {
         email: _emailController.text,
         password: _passwordController.text,
       );
+      setState(() {
+        isProcessing = false;
+      });
       Navigator.of(context).pushNamed('/dashboard');
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
@@ -111,13 +122,26 @@ class _AuthenticationState extends State<Authentication> {
                           color: Colors.orange,
                           shape: BoxShape.rectangle),
                       child: TextButton(
-                        child: Text(
-                          "Log In",
-                          style: TextStyle(
-                            color: Colors.white,
-                          ),
+                        child: Stack(
+                          children: [
+                            Visibility(
+                              visible: !isProcessing,
+                              child: Text(
+                                "Log In",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            Visibility(
+                              visible: isProcessing,
+                              child: CircularProgressIndicator(),
+                            )
+                          ],
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          registerUser();
+                        },
                       ),
                     ),
                     _buildSignupBtn()
