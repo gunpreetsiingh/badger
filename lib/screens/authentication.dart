@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -32,6 +33,7 @@ class _AuthenticationState extends State<Authentication> {
         email: _emailController.text,
         password: _passwordController.text,
       );
+      createUser(userCredential);
       setState(() {
         isProcessing = false;
       });
@@ -51,8 +53,7 @@ class _AuthenticationState extends State<Authentication> {
 
   void signIn() async {
     try {
-      UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text,
         password: _passwordController.text,
       );
@@ -67,6 +68,16 @@ class _AuthenticationState extends State<Authentication> {
         print('Wrong password provided for that user.');
       }
     }
+  }
+
+  void createUser(UserCredential userCredential) {
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(userCredential.user!.uid)
+        .set({
+      'email': _emailController.text,
+      'joinedOn': DateTime.now().toString(),
+    });
   }
 
   var size;
