@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class Authentication extends StatefulWidget {
   const Authentication({Key? key}) : super(key: key);
@@ -9,8 +10,6 @@ class Authentication extends StatefulWidget {
 }
 
 class _AuthenticationState extends State<Authentication> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -89,21 +88,50 @@ class _AuthenticationState extends State<Authentication> {
               Container(
                 height: size.height / 2,
                 width: size.width / 1.3,
+                padding: EdgeInsets.all(15),
                 decoration: new BoxDecoration(
                   shape: BoxShape.rectangle,
                   borderRadius: BorderRadius.circular(15.0),
-                  color: Colors.white10,
+                  color: Colors.white.withOpacity(0.85),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.25),
+                      blurRadius: 5,
+                      spreadRadius: 5,
+                      offset: Offset(0, 0),
+                    ),
+                  ],
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
+                    SizedBox(
+                      height: 20,
+                    ),
                     Text(
                       "Log In",
                       style: TextStyle(
                           color: Colors.black,
                           fontSize: 25.0,
                           fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(
+                      height: 15,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        FaIcon(FontAwesomeIcons.google),
+                        SizedBox(
+                          width: 30,
+                        ),
+                        FaIcon(FontAwesomeIcons.facebook),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 10,
                     ),
                     Text(
                       "or",
@@ -112,11 +140,20 @@ class _AuthenticationState extends State<Authentication> {
                           fontSize: 15.0,
                           fontWeight: FontWeight.bold),
                     ),
+                    SizedBox(
+                      height: 10,
+                    ),
                     withEmailPassword(),
+                    SizedBox(
+                      height: 10,
+                    ),
                     _buildForgotBtn(),
+                    SizedBox(
+                      height: 10,
+                    ),
                     Container(
-                      width: 100.0,
-                      height: 30.0,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 30, vertical: 10),
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20.0),
                           color: Colors.orange,
@@ -135,7 +172,11 @@ class _AuthenticationState extends State<Authentication> {
                             ),
                             Visibility(
                               visible: isProcessing,
-                              child: CircularProgressIndicator(),
+                              child: Container(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                      color: Colors.white)),
                             )
                           ],
                         ),
@@ -144,7 +185,10 @@ class _AuthenticationState extends State<Authentication> {
                         },
                       ),
                     ),
-                    _buildSignupBtn()
+                    SizedBox(
+                      height: 10,
+                    ),
+                    _buildSignupBtn(),
                   ],
                 ),
               ),
@@ -154,37 +198,62 @@ class _AuthenticationState extends State<Authentication> {
   }
 
   Widget withEmailPassword() {
-    return Form(
-        key: _formKey,
-        child: Card(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter some text';
-                  }
-                  return null;
-                },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        ClipRRect(
+          borderRadius: BorderRadius.circular(50),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.blue,
+                width: 2,
               ),
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Password'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter some text';
-                  }
-                  return null;
-                },
-                obscureText: true,
+              borderRadius: BorderRadius.circular(50),
+            ),
+            child: TextField(
+              controller: _emailController,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                prefixIcon: Icon(
+                  Icons.email_outlined,
+                  color: Colors.grey,
+                ),
+                border: InputBorder.none,
               ),
-            ],
+            ),
           ),
-        ));
+        ),
+        SizedBox(
+          height: 15,
+        ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(50),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.blue,
+                width: 2,
+              ),
+              borderRadius: BorderRadius.circular(50),
+            ),
+            child: TextField(
+              controller: _passwordController,
+              decoration: const InputDecoration(
+                labelText: 'Password',
+                prefixIcon: Icon(
+                  Icons.vpn_key_rounded,
+                  color: Colors.grey,
+                ),
+                border: InputBorder.none,
+              ),
+              obscureText: true,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildForgotBtn() {

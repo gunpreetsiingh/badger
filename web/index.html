@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -26,6 +27,7 @@
   <title>badger</title>
   <link rel="manifest" href="manifest.json">
 </head>
+
 <body>
   <!-- This script installs service_worker.js to provide PWA functionality to
        application. For more information, see:
@@ -94,5 +96,32 @@
       loadMainDartJs();
     }
   </script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+
+  <!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-analytics.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+
+  <script>
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    var firebaseConfig = {
+      apiKey: "AIzaSyCMcDFNG_ZfvtHJUu5OhCtyg3JIH_O6BY4",
+      authDomain: "badger-quantageeks.firebaseapp.com",
+      projectId: "badger-quantageeks",
+      storageBucket: "badger-quantageeks.appspot.com",
+      messagingSenderId: "932965479851",
+      appId: "1:932965479851:web:65a241a224cfd1bfe74eee",
+      measurementId: "G-GEGMNBKT6D"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+  </script>
+
 </body>
+
 </html>
