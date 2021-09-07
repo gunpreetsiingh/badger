@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "932965479851",
+    "project_id": "badger-quantageeks",
+    "storage_bucket": "badger-quantageeks.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:932965479851:android:5d6351f21d2b9ba6e74eee",
+        "android_client_info": {
+          "package_name": "com.example.badger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "932965479851-i3pl8qkh4qb2cli2t2i3g3n9r3opl34v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAtHwSSDEbvkdCebovRtlb17j7uIjwhj7k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "932965479851-i3pl8qkh4qb2cli2t2i3g3n9r3opl34v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
