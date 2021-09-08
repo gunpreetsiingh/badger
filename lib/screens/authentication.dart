@@ -1,11 +1,12 @@
+// @dart=2.9
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class Authentication extends StatefulWidget {
-  const Authentication({Key? key}) : super(key: key);
-
   @override
   _AuthenticationState createState() => _AuthenticationState();
 }
@@ -14,13 +15,38 @@ class _AuthenticationState extends State<Authentication> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  bool isProcessing = false;
+  bool isProcessing = false, isGoogleLoading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void signInWithGoogle() async {
+    setState(() {
+      isGoogleLoading = true;
+    });
+    // Trigger the authentication flow
+    final GoogleSignInAccount googleUser = await GoogleSignIn().signIn();
+
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    // Once signed in, return the UserCredential
+    await FirebaseAuth.instance.signInWithCredential(credential);
+    setState(() {
+      isGoogleLoading = false;
+    });
+    Navigator.of(context).pushNamed('/dashboard');
   }
 
   void registerUser() async {
@@ -73,7 +99,7 @@ class _AuthenticationState extends State<Authentication> {
   void createUser(UserCredential userCredential) {
     FirebaseFirestore.instance
         .collection('users')
-        .doc(userCredential.user!.uid)
+        .doc(userCredential.user.uid)
         .set({
       'email': _emailController.text,
       'joinedOn': DateTime.now().toString(),
@@ -133,16 +159,39 @@ class _AuthenticationState extends State<Authentication> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        FaIcon(
-                          FontAwesomeIcons.google,
-                          color: Colors.red[700],
+                        IconButton(
+                          onPressed: () {
+                            if (!isGoogleLoading) {
+                              signInWithGoogle();
+                            }
+                          },
+                          icon: Stack(
+                            children: [
+                              Visibility(
+                                visible: !isGoogleLoading,
+                                child: FaIcon(
+                                  FontAwesomeIcons.google,
+                                  color: Colors.red[700],
+                                ),
+                              ),
+                              Visibility(
+                                visible: isGoogleLoading,
+                                child: CircularProgressIndicator(
+                                  color: Colors.black,
+                                ),
+                              )
+                            ],
+                          ),
                         ),
                         SizedBox(
                           width: 30,
                         ),
-                        FaIcon(
-                          FontAwesomeIcons.facebook,
-                          color: Colors.blue[900],
+                        IconButton(
+                          onPressed: () {},
+                          icon: FaIcon(
+                            FontAwesomeIcons.facebook,
+                            color: Colors.blue[900],
+                          ),
                         ),
                       ],
                     ),

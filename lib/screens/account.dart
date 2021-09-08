@@ -94,10 +94,53 @@ class _AccountState extends State<Account> {
                                         Expanded(
                                           child: Column(
                                             children: [
-                                              Icon(
-                                                Icons.account_circle_outlined,
-                                                color: Colors.grey[800],
-                                                size: 64,
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(64),
+                                                  border: Border.all(
+                                                    color: Colors.black,
+                                                    width: 2,
+                                                  ),
+                                                ),
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(64),
+                                                  child: Image(
+                                                    image: NetworkImage(FirebaseAuth
+                                                                .instance
+                                                                .currentUser!
+                                                                .photoURL ==
+                                                            null
+                                                        ? 'https://www.pngall.com/wp-content/uploads/5/Profile-PNG-Clipart.png'
+                                                        : FirebaseAuth
+                                                            .instance
+                                                            .currentUser!
+                                                            .photoURL!),
+                                                    height: 64,
+                                                    width: 64,
+                                                  ),
+                                                ),
+                                              ),
+                                              Visibility(
+                                                visible: FirebaseAuth
+                                                        .instance
+                                                        .currentUser!
+                                                        .displayName
+                                                        .toString() !=
+                                                    'null',
+                                                child: Text(
+                                                  FirebaseAuth.instance
+                                                      .currentUser!.displayName
+                                                      .toString(),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
                                               ),
                                               Text(
                                                 FirebaseAuth
@@ -105,7 +148,8 @@ class _AccountState extends State<Account> {
                                                     .toString(),
                                                 overflow: TextOverflow.ellipsis,
                                                 style: TextStyle(
-                                                  color: Colors.black,
+                                                  color: Colors.black
+                                                      .withOpacity(0.5),
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.bold,
                                                 ),
@@ -212,7 +256,8 @@ class _AccountState extends State<Account> {
                                           ),
                                         ),
                                         onPressed: () {
-                                          Navigator.of(context).pushNamed('/subscribe');
+                                          Navigator.of(context)
+                                              .pushNamed('/subscribe');
                                         },
                                       ),
                                     ),
