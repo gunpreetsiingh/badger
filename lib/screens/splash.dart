@@ -46,29 +46,9 @@ class _SplashState extends State<Splash> {
               height: size.height,
               width: size.width,
             ),
-            Container(
-              width: 140,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    'Badger',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 42,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 15,
-                  ),
-                  LinearProgressIndicator(
-                    color: Colors.black,
-                    backgroundColor: Colors.black.withOpacity(0.30),
-                  )
-                ],
-              ),
+            Image(
+              image: AssetImage('assets/logo.png'),
+              width: 250,
             ),
           ],
         ),

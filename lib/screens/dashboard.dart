@@ -115,13 +115,9 @@ class _DashboardState extends State<Dashboard> {
                 width: size.width,
                 color: Colors.white,
                 alignment: Alignment.center,
-                child: Text(
-                  'Badger',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 42,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Image(
+                  image: AssetImage('assets/logo.png'),
+                  width: 250,
                 ),
               ),
               Expanded(
@@ -230,6 +226,7 @@ class _DashboardState extends State<Dashboard> {
                                           visible: !isLoading && isEmpty,
                                           child: Text(
                                             'You have not created any tasks yet.',
+                                            textAlign: TextAlign.center,
                                             style: TextStyle(
                                               color: Colors.grey,
                                               fontSize: 16,
@@ -257,23 +254,28 @@ class _DashboardState extends State<Dashboard> {
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.account_circle_rounded,
-                                    color: Colors.white,
-                                  ),
-                                  SizedBox(
-                                    height: 5,
-                                  ),
-                                  Text(
-                                    'Account',
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 14),
-                                  )
-                                ],
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).pushNamed('/account');
+                                },
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.account_circle_rounded,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(
+                                      height: 5,
+                                    ),
+                                    Text(
+                                      'Account',
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 14),
+                                    )
+                                  ],
+                                ),
                               ),
                               GestureDetector(
                                 onTap: () async {

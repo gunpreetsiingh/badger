@@ -1,7 +1,9 @@
+import 'package:badger/screens/account.dart';
 import 'package:badger/screens/addTask.dart';
 import 'package:badger/screens/authentication.dart';
 import 'package:badger/screens/dashboard.dart';
 import 'package:badger/screens/splash.dart';
+import 'package:badger/screens/subscribe.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -24,6 +26,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/authentication' : (context) => Authentication(),
         '/dashboard' : (context) => Dashboard(),
+        '/account': (context) => Account(),
+        '/subscribe': (context) => Subscribe(),
       },
     );
   }

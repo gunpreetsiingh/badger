@@ -97,7 +97,6 @@ class _AuthenticationState extends State<Authentication> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Container(
-                height: size.height / 2,
                 width: size.width / 1.3,
                 padding: EdgeInsets.all(15),
                 decoration: new BoxDecoration(
@@ -202,10 +201,6 @@ class _AuthenticationState extends State<Authentication> {
                         },
                       ),
                     ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    _buildSignupBtn(),
                   ],
                 ),
               ),
@@ -289,34 +284,6 @@ class _AuthenticationState extends State<Authentication> {
             ),
             TextSpan(
               text: 'Click Here',
-              style: TextStyle(
-                color: Colors.blue,
-                fontSize: 15.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSignupBtn() {
-    return GestureDetector(
-      onTap: () {},
-      child: RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: 'Need an account? ',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 15.0,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-            TextSpan(
-              text: 'Sign Up',
               style: TextStyle(
                 color: Colors.blue,
                 fontSize: 15.0,

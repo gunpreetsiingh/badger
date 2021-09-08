@@ -97,13 +97,9 @@ class _AddTaskState extends State<AddTask> {
                 width: size.width,
                 color: Colors.white,
                 alignment: Alignment.center,
-                child: Text(
-                  'Badger',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 42,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Image(
+                  image: AssetImage('assets/logo.png'),
+                  width: 250,
                 ),
               ),
               Expanded(
