@@ -134,11 +134,17 @@ class _AuthenticationState extends State<Authentication> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        FaIcon(FontAwesomeIcons.google),
+                        FaIcon(
+                          FontAwesomeIcons.google,
+                          color: Colors.red[700],
+                        ),
                         SizedBox(
                           width: 30,
                         ),
-                        FaIcon(FontAwesomeIcons.facebook),
+                        FaIcon(
+                          FontAwesomeIcons.facebook,
+                          color: Colors.blue[900],
+                        ),
                       ],
                     ),
                     SizedBox(

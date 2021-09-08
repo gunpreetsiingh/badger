@@ -1,3 +1,4 @@
+import 'package:badger/screens/addTask.dart';
 import 'package:badger/screens/authentication.dart';
 import 'package:badger/screens/dashboard.dart';
 import 'package:badger/screens/splash.dart';

@@ -1,5 +1,6 @@
 import 'package:badger/screens/authentication.dart';
 import 'package:badger/screens/dashboard.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Splash extends StatefulWidget {
@@ -21,11 +22,11 @@ class _SplashState extends State<Splash> {
 
   void navigate() async {
     await Future.delayed(Duration(milliseconds: 2500)); // 2500
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => Authentication(),
-      ),
-    );
+    if (FirebaseAuth.instance.currentUser == null) {
+      Navigator.of(context).pushNamed('/authentication');
+    } else {
+      Navigator.of(context).pushNamed('/dashboard');
+    }
   }
 
   @override
