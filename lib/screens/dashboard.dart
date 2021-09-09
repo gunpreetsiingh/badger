@@ -2,6 +2,7 @@ import 'package:badger/screens/addTask.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -50,8 +51,7 @@ class _DashboardState extends State<Dashboard> {
                     element.id,
                     element['name'],
                     element['description'],
-                    element['date'],
-                    element['hour'],
+                    element['working'],
                     element['importance'],
                   ),
                 ),
@@ -62,6 +62,7 @@ class _DashboardState extends State<Dashboard> {
             },
             child: new Container(
               padding: EdgeInsets.all(15),
+              margin: EdgeInsets.only(bottom: 10),
               decoration: BoxDecoration(
                 color: Colors.orange[800],
                 borderRadius: BorderRadius.circular(50),
@@ -236,8 +237,9 @@ class _DashboardState extends State<Dashboard> {
                                         ),
                                         Visibility(
                                           visible: isLoading && !isEmpty,
-                                          child: CircularProgressIndicator(
-                                            color: Colors.black,
+                                          child: Lottie.asset(
+                                            'assets/animation-loading.json',
+                                            width: 250,
                                           ),
                                         )
                                       ],
@@ -282,7 +284,7 @@ class _DashboardState extends State<Dashboard> {
                                   var result = await Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          AddTask(false, '', '', '', '', '', 1),
+                                          AddTask(false, '', '', '', true, 1),
                                     ),
                                   );
                                   if (result != null) {

@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 
 class AddTask extends StatefulWidget {
   bool update;
-  String docID, name, description, date, hour;
+  String docID, name, description;
+  bool working;
   int importance;
-  AddTask(this.update, this.docID, this.name, this.description, this.date,
-      this.hour, this.importance);
+  AddTask(this.update, this.docID, this.name, this.description, this.working,
+      this.importance);
 
   @override
   _AddTaskState createState() => _AddTaskState();
@@ -21,20 +22,62 @@ class _AddTaskState extends State<AddTask> {
   var txtHour = TextEditingController();
 
   bool one = true, two = false, three = false;
+  bool isLoading = true;
+  late var data;
+  String fromTime = '', toTime = '';
+  bool time1 = true, time2 = false;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    load();
     prefill();
+  }
+
+  void load() async {
+    setState(() {
+      isLoading = true;
+    });
+    DocumentSnapshot doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get();
+    data = doc.data();
+    setState(() {
+      try {
+        fromTime = data['from'];
+        toTime = data['to'];
+        if (fromTime.toString() == 'null') {
+          fromTime = '09:00';
+        }
+        if (toTime.toString() == 'null') {
+          toTime = '17:00';
+        }
+      } catch (e) {
+        fromTime = '09:00';
+        toTime = '17:00';
+      }
+    });
+    print('$fromTime - $toTime');
+    setState(() {
+      isLoading = false;
+    });
   }
 
   void prefill() {
     if (widget.update) {
-      txtName.text = widget.name;
-      txtDescription.text = widget.description;
-      txtDate.text = widget.date;
-      txtHour.text = widget.hour;
+      setState(() {
+        txtName.text = widget.name;
+        txtDescription.text = widget.description;
+        if (widget.working) {
+          time1 = true;
+          time2 = false;
+        } else {
+          time1 = false;
+          time2 = true;
+        }
+      });
       switch (widget.importance) {
         case 1:
           one = true;
@@ -64,8 +107,7 @@ class _AddTaskState extends State<AddTask> {
         .set({
       'name': txtName.text,
       'description': txtDescription.text,
-      'date': txtDate.text,
-      'hour': txtHour.text,
+      'working': time1 ? true : false,
       'importance': one ? 1 : (two ? 2 : 3),
       'timestamp': DateTime.now().toString(),
     });
@@ -255,58 +297,55 @@ class _AddTaskState extends State<AddTask> {
                                         ),
                                       ),
                                     ),
-                                    SizedBox(
-                                      height: 10,
-                                    ),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(50),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: Colors.blue,
-                                            width: 2,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(50),
-                                        ),
-                                        child: TextField(
-                                          controller: txtDate,
-                                          decoration: const InputDecoration(
-                                            labelText: 'Date',
-                                            contentPadding:
-                                                EdgeInsets.only(left: 20),
-                                            border: InputBorder.none,
-                                          ),
+                                    CheckboxListTile(
+                                      value: time1,
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                      title: Text(
+                                        'Working Hours',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                    ),
-                                    SizedBox(
-                                      height: 10,
-                                    ),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(50),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: Colors.blue,
-                                            width: 2,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(50),
-                                        ),
-                                        child: TextField(
-                                          controller: txtHour,
-                                          decoration: const InputDecoration(
-                                            labelText: 'Hour',
-                                            contentPadding:
-                                                EdgeInsets.only(left: 20),
-                                            border: InputBorder.none,
-                                          ),
+                                      subtitle: Text(
+                                        '$fromTime - $toTime',
+                                        style: TextStyle(
+                                          color: Colors.black.withOpacity(0.5),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
+                                      onChanged: (val) {
+                                        setState(() {
+                                          if (val!) {
+                                            time1 = true;
+                                            time2 = false;
+                                          }
+                                        });
+                                      },
                                     ),
-                                    SizedBox(
-                                      height: 10,
+                                    CheckboxListTile(
+                                      value: time2,
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                      title: Text(
+                                        'Personal Hours',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      onChanged: (val) {
+                                        setState(() {
+                                          if (val!) {
+                                            time1 = false;
+                                            time2 = true;
+                                          }
+                                        });
+                                      },
                                     ),
                                     Text(
                                       'Importance Of Task:',

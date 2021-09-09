@@ -128,6 +128,8 @@ class _AuthenticationState extends State<Authentication> {
         .doc(userCredential.user!.uid)
         .set({
       'email': _emailController.text,
+      'from': '09:00',
+      'to': '17:00',
       'joinedOn': DateTime.now().toString(),
     });
   }
@@ -135,6 +137,8 @@ class _AuthenticationState extends State<Authentication> {
   void createUserFromFbLogin(String email) {
     FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).set({
       'email': email,
+      'from': '09:00',
+      'to': '17:00',
       'joinedOn': DateTime.now().toString(),
     });
   }

@@ -4,6 +4,7 @@ import 'package:badger/screens/authentication.dart';
 import 'package:badger/screens/dashboard.dart';
 import 'package:badger/screens/splash.dart';
 import 'package:badger/screens/subscribe.dart';
+import 'package:badger/screens/workingHours.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
         '/dashboard' : (context) => Dashboard(),
         '/account': (context) => Account(),
         '/subscribe': (context) => Subscribe(),
+        '/working-hours': (context) => WorkingHours(),
       },
     );
   }
