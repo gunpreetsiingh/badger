@@ -45,6 +45,13 @@ class _AuthenticationState extends State<Authentication> {
     setState(() {
       isGoogleLoading = false;
     });
+    QuerySnapshot usersData = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: googleUser.email)
+        .get();
+    if (usersData.docs.isEmpty) {
+      createUserFromGoogleLogin(googleUser.email);
+    }
     Navigator.of(context).pushNamed('/dashboard');
   }
 
@@ -134,8 +141,23 @@ class _AuthenticationState extends State<Authentication> {
     });
   }
 
+  void createUserFromGoogleLogin(String email) {
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .set({
+      'email': email,
+      'from': '09:00',
+      'to': '17:00',
+      'joinedOn': DateTime.now().toString(),
+    });
+  }
+
   void createUserFromFbLogin(String email) {
-    FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).set({
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .set({
       'email': email,
       'from': '09:00',
       'to': '17:00',
