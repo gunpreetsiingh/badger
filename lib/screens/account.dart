@@ -282,8 +282,8 @@ class _AccountState extends State<Account> {
                                             ),
                                           ),
                                         ),
-                                        onPressed: () {
-                                          FirebaseAuth.instance.signOut();
+                                        onPressed: () async {
+                                          await FirebaseAuth.instance.signOut();
                                           Navigator.of(context)
                                               .pushReplacementNamed(
                                                   '/authentication');

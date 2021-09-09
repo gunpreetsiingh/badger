@@ -1,10 +1,9 @@
-// @dart=2.9
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 class Authentication extends StatefulWidget {
   @override
@@ -15,7 +14,7 @@ class _AuthenticationState extends State<Authentication> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  bool isProcessing = false, isGoogleLoading = false;
+  bool isProcessing = false, isGoogleLoading = false, isFacebookLoading = false;
 
   @override
   void dispose() {
@@ -29,11 +28,11 @@ class _AuthenticationState extends State<Authentication> {
       isGoogleLoading = true;
     });
     // Trigger the authentication flow
-    final GoogleSignInAccount googleUser = await GoogleSignIn().signIn();
+    var googleUser = await GoogleSignIn().signIn();
 
     // Obtain the auth details from the request
     final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
+        await googleUser!.authentication;
 
     // Create a new credential
     final credential = GoogleAuthProvider.credential(
@@ -47,6 +46,33 @@ class _AuthenticationState extends State<Authentication> {
       isGoogleLoading = false;
     });
     Navigator.of(context).pushNamed('/dashboard');
+  }
+
+  void signInWithFacebook() async {
+    setState(() {
+      isFacebookLoading = true;
+    });
+    final LoginResult result = await FacebookAuth.instance.login();
+    if (result.status == LoginStatus.success) {
+      // you are logged
+      final AccessToken accessToken = result.accessToken!;
+      final AuthCredential credential =
+          FacebookAuthProvider.credential(accessToken.token);
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      FacebookAuth.instance.getUserData().then((userData) async {
+        QuerySnapshot usersData = await FirebaseFirestore.instance
+            .collection('users')
+            .where('email', isEqualTo: userData['email'])
+            .get();
+        if (usersData.docs.isEmpty) {
+          createUserFromFbLogin(userData['email']);
+        }
+        Navigator.of(context).pushNamed('/dashboard');
+      });
+    }
+    setState(() {
+      isFacebookLoading = false;
+    });
   }
 
   void registerUser() async {
@@ -99,9 +125,16 @@ class _AuthenticationState extends State<Authentication> {
   void createUser(UserCredential userCredential) {
     FirebaseFirestore.instance
         .collection('users')
-        .doc(userCredential.user.uid)
+        .doc(userCredential.user!.uid)
         .set({
       'email': _emailController.text,
+      'joinedOn': DateTime.now().toString(),
+    });
+  }
+
+  void createUserFromFbLogin(String email) {
+    FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).set({
+      'email': email,
       'joinedOn': DateTime.now().toString(),
     });
   }
@@ -177,7 +210,7 @@ class _AuthenticationState extends State<Authentication> {
                               Visibility(
                                 visible: isGoogleLoading,
                                 child: CircularProgressIndicator(
-                                  color: Colors.black,
+                                  color: Colors.red[700],
                                 ),
                               )
                             ],
@@ -187,10 +220,27 @@ class _AuthenticationState extends State<Authentication> {
                           width: 30,
                         ),
                         IconButton(
-                          onPressed: () {},
-                          icon: FaIcon(
-                            FontAwesomeIcons.facebook,
-                            color: Colors.blue[900],
+                          onPressed: () {
+                            if (!isFacebookLoading) {
+                              signInWithFacebook();
+                            }
+                          },
+                          icon: Stack(
+                            children: [
+                              Visibility(
+                                visible: !isFacebookLoading,
+                                child: FaIcon(
+                                  FontAwesomeIcons.facebook,
+                                  color: Colors.blue[900],
+                                ),
+                              ),
+                              Visibility(
+                                visible: isFacebookLoading,
+                                child: CircularProgressIndicator(
+                                  color: Colors.blue[900],
+                                ),
+                              )
+                            ],
                           ),
                         ),
                       ],
