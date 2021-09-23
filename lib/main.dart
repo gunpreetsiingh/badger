@@ -1,6 +1,7 @@
 import 'package:badger/screens/account.dart';
 import 'package:badger/screens/addTask.dart';
 import 'package:badger/screens/authentication.dart';
+import 'package:badger/screens/completedTasks.dart';
 import 'package:badger/screens/dashboard.dart';
 import 'package:badger/screens/splash.dart';
 import 'package:badger/screens/subscribe.dart';
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
         '/account': (context) => Account(),
         '/subscribe': (context) => Subscribe(),
         '/working-hours': (context) => WorkingHours(),
+        '/completed-tasks': (context) => CompletedTasks(),
       },
     );
   }

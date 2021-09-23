@@ -4,14 +4,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
-class Dashboard extends StatefulWidget {
-  const Dashboard({Key? key}) : super(key: key);
+class CompletedTasks extends StatefulWidget {
+  const CompletedTasks({Key? key}) : super(key: key);
 
   @override
-  _DashboardState createState() => _DashboardState();
+  _CompletedTasksState createState() => _CompletedTasksState();
 }
 
-class _DashboardState extends State<Dashboard> {
+class _CompletedTasksState extends State<CompletedTasks> {
   var size;
   bool isLoading = true, isEmpty = false;
   late QuerySnapshot data;
@@ -27,7 +27,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void loadTasks() async {
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(Duration(milliseconds: 1));
     setState(() {
       isLoading = true;
       h1 = size.height * 0.80;
@@ -40,7 +40,7 @@ class _DashboardState extends State<Dashboard> {
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection('tasks')
-        .where('completed', isEqualTo: false)
+        .where('completed', isEqualTo: true)
         .get();
     if (data.docs.isEmpty) {
       setState(() {
@@ -142,7 +142,7 @@ class _DashboardState extends State<Dashboard> {
                     ),
                     Container(
                       padding: EdgeInsets.only(
-                          top: 40, left: 40, right: 40, bottom: 10),
+                          top: 40, left: 40, right: 40, bottom: 40),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -221,16 +221,36 @@ class _DashboardState extends State<Dashboard> {
                                           CrossAxisAlignment.center,
                                       mainAxisSize: MainAxisSize.max,
                                       children: [
-                                        Visibility(
-                                          visible: !isLoading && !isEmpty,
-                                          child: Text(
-                                            'Fill Your Task',
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 28,
-                                              fontWeight: FontWeight.bold,
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            IconButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                              icon: Icon(
+                                                Icons.arrow_back_rounded,
+                                                color: Colors.black,
+                                              ),
                                             ),
-                                          ),
+                                            SizedBox(
+                                              width: 10,
+                                            ),
+                                            Expanded(
+                                              child: Text(
+                                                'Completed Tasks',
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 24,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                         SizedBox(
                                           height: 15,
@@ -244,7 +264,7 @@ class _DashboardState extends State<Dashboard> {
                                         Visibility(
                                           visible: !isLoading && isEmpty,
                                           child: Text(
-                                            'You have not created any tasks yet.',
+                                            'You have not completed/created any tasks yet.',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               color: Colors.grey,
@@ -266,73 +286,6 @@ class _DashboardState extends State<Dashboard> {
                                 ),
                               ],
                             ),
-                          ),
-                          SizedBox(
-                            height: 25,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              GestureDetector(
-                                onTap: () async {
-                                  var result = await Navigator.of(context)
-                                      .pushNamed('/account');
-                                  if (result != null) {
-                                    loadTasks();
-                                  }
-                                },
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.account_circle_rounded,
-                                      color: Colors.white,
-                                    ),
-                                    SizedBox(
-                                      height: 5,
-                                    ),
-                                    Text(
-                                      'Account',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 14),
-                                    )
-                                  ],
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () async {
-                                  var result = await Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => AddTask(
-                                          false, '', '', '', true, 1, false),
-                                    ),
-                                  );
-                                  if (result != null) {
-                                    loadTasks();
-                                  }
-                                },
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.description_outlined,
-                                      color: Colors.white,
-                                    ),
-                                    SizedBox(
-                                      height: 5,
-                                    ),
-                                    Text(
-                                      'Add',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 14),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ],
                           ),
                         ],
                       ),

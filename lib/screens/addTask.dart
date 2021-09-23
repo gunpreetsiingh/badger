@@ -7,8 +7,9 @@ class AddTask extends StatefulWidget {
   String docID, name, description;
   bool working;
   int importance;
+  bool complete;
   AddTask(this.update, this.docID, this.name, this.description, this.working,
-      this.importance);
+      this.importance, this.complete);
 
   @override
   _AddTaskState createState() => _AddTaskState();
@@ -110,6 +111,7 @@ class _AddTaskState extends State<AddTask> {
       'working': time1 ? true : false,
       'importance': one ? 1 : (two ? 2 : 3),
       'timestamp': DateTime.now().toString(),
+      'completed': false,
     });
     Navigator.of(context).pop(true);
   }
@@ -121,6 +123,23 @@ class _AddTaskState extends State<AddTask> {
         .collection('tasks')
         .doc(widget.docID)
         .delete();
+    Navigator.of(context).pop(true);
+  }
+
+  void alterCompletion(bool status){
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('tasks')
+        .doc(widget.update ? widget.docID : null)
+        .set({
+      'name': txtName.text,
+      'description': txtDescription.text,
+      'working': time1 ? true : false,
+      'importance': one ? 1 : (two ? 2 : 3),
+      'timestamp': DateTime.now().toString(),
+      'completed': status,
+    });
     Navigator.of(context).pop(true);
   }
 
@@ -483,31 +502,66 @@ class _AddTaskState extends State<AddTask> {
                                     SizedBox(
                                       height: 15,
                                     ),
-                                    Visibility(
-                                      visible: widget.update,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(20.0),
-                                          color: Colors.red,
-                                          shape: BoxShape.rectangle,
-                                        ),
-                                        child: TextButton(
-                                          child: Padding(
-                                            padding: EdgeInsets.all(10),
-                                            child: Text(
-                                              'Delete Task',
-                                              style: TextStyle(
-                                                color: Colors.white,
+                                    Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Visibility(
+                                            visible: widget.update,
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(20.0),
+                                                color: Colors.blue[900],
+                                                shape: BoxShape.rectangle,
+                                              ),
+                                              child: TextButton(
+                                                child: Padding(
+                                                  padding: EdgeInsets.all(5),
+                                                  child: Text(
+                                                    widget.complete ? 'Mark Uncomplete' : 'Mark Complete',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                                onPressed: () {
+                                                  alterCompletion(widget.complete ? false : true);
+                                                },
                                               ),
                                             ),
                                           ),
-                                          onPressed: () {
-                                            deleteTask();
-                                          },
-                                        ),
-                                      ),
-                                    ),
+                                          SizedBox(
+                                            width: 5,
+                                          ),
+                                          Visibility(
+                                            visible: widget.update,
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(20.0),
+                                                color: Colors.red,
+                                                shape: BoxShape.rectangle,
+                                              ),
+                                              child: TextButton(
+                                                child: Padding(
+                                                  padding: EdgeInsets.all(5),
+                                                  child: Text(
+                                                    'Delete Task',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                                onPressed: () {
+                                                  deleteTask();
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ])
                                   ],
                                 ),
                               ),
