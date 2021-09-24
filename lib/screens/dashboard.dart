@@ -1,6 +1,9 @@
+import 'package:badger/constants.dart';
 import 'package:badger/screens/addTask.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -19,14 +22,45 @@ class _DashboardState extends State<Dashboard> {
 
   double h1 = 0, h2 = 0, h3 = 0, w = 0;
 
+  late ConnectivityResult connectivityResult;
+  var subscription;
+  bool noConnection = false;
+
+  var tasksGroup;
+  Map offlineTasks = {};
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    subscription = Connectivity()
+        .onConnectivityChanged
+        .listen((ConnectivityResult result) {
+      setState(() {
+        connectivityResult = result;
+        switch (result) {
+          case ConnectivityResult.none:
+            noConnection = true;
+            break;
+          case ConnectivityResult.wifi:
+            noConnection = false;
+            break;
+          case ConnectivityResult.mobile:
+            noConnection = false;
+            break;
+        }
+      });
+    });
     loadTasks();
   }
 
   void loadTasks() async {
+    connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      noConnection = true;
+    } else {
+      noConnection = false;
+    }
     await Future.delayed(Duration(milliseconds: 500));
     setState(() {
       isLoading = true;
@@ -36,37 +70,132 @@ class _DashboardState extends State<Dashboard> {
       w = size.width;
     });
     listTasks.clear();
-    data = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .collection('tasks')
-        .where('completed', isEqualTo: false)
-        .get();
-    if (data.docs.isEmpty) {
+    if (connectivityResult == ConnectivityResult.none) {
+      loadTasksOffline();
+    } else {
+      loadTasksOnline();
+    }
+  }
+
+  void loadTasksOffline() {
+    Map data = Constants.hiveDB.get('tasks');
+    if (data.isEmpty) {
       setState(() {
         isEmpty = true;
       });
     } else {
       setState(() {
         isEmpty = false;
-        data.docs.forEach((element) {
+        data.forEach((key, value) {
           listTasks.add(GestureDetector(
             onTap: () async {
-              var result = await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => AddTask(
-                    true,
-                    element.id,
-                    element['name'],
-                    element['description'],
-                    element['working'],
-                    element['importance'],
-                    element['completed'] ?? false,
-                  ),
-                ),
+              Constants.showSnackBar(
+                'You can only view your tasks summary in offline mode.',
+                true,
+                context,
               );
-              if (result != null) {
-                loadTasks();
+            },
+            child: new Container(
+              padding: EdgeInsets.all(15),
+              margin: EdgeInsets.only(bottom: 10),
+              decoration: BoxDecoration(
+                color: Colors.orange[800],
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      value['name'],
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: Colors.white,
+                  )
+                ],
+              ),
+            ),
+          ));
+        });
+      });
+    }
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  void loadTasksOnline() async {
+    setState(() {
+      isLoading = true;
+      h1 = size.height * 0.80;
+      h2 = size.height * 0.78;
+      h3 = size.height * 0.76;
+      w = size.width;
+    });
+    listTasks.clear();
+    tasksGroup = [];
+    data = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('tasks')
+        .where('completed', isEqualTo: false)
+        .get();
+    tasksGroup = data.docs;
+    if (tasksGroup.isEmpty) {
+      setState(() {
+        isEmpty = true;
+      });
+    } else {
+      setState(() {
+        isEmpty = false;
+        tasksGroup.forEach((element) {
+          if (!noConnection) {
+            offlineTasks[element.id] = {
+              'name': element['name'],
+              'description': element['description'],
+              'working': element['working'],
+              'importance': element['importance'],
+              'timestamp': element['timestamp'],
+              'completed': element['completed'],
+            };
+          }
+          listTasks.add(GestureDetector(
+            onTap: () async {
+              if (noConnection) {
+                Constants.showSnackBar(
+                  'You can only view your tasks summary in offline mode.',
+                  true,
+                  context,
+                );
+              } else {
+                var result = await Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => AddTask(
+                      true,
+                      element.id,
+                      element['name'],
+                      element['description'],
+                      element['working'],
+                      element['importance'],
+                      element['completed'] ?? false,
+                    ),
+                  ),
+                );
+                if (result != null) {
+                  loadTasks();
+                }
               }
             },
             child: new Container(
@@ -103,6 +232,9 @@ class _DashboardState extends State<Dashboard> {
             ),
           ));
         });
+        if (!noConnection) {
+          Constants.hiveDB.put('tasks', offlineTasks);
+        }
       });
     }
     setState(() {
@@ -276,10 +408,18 @@ class _DashboardState extends State<Dashboard> {
                             children: [
                               GestureDetector(
                                 onTap: () async {
-                                  var result = await Navigator.of(context)
-                                      .pushNamed('/account');
-                                  if (result != null) {
-                                    loadTasks();
+                                  if (noConnection) {
+                                    Constants.showSnackBar(
+                                      'You can only view your tasks summary in offline mode.',
+                                      true,
+                                      context,
+                                    );
+                                  } else {
+                                    var result = await Navigator.of(context)
+                                        .pushNamed('/account');
+                                    if (result != null) {
+                                      loadTasks();
+                                    }
                                   }
                                 },
                                 child: Column(
@@ -303,14 +443,23 @@ class _DashboardState extends State<Dashboard> {
                               ),
                               GestureDetector(
                                 onTap: () async {
-                                  var result = await Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => AddTask(
-                                          false, '', '', '', true, 1, false),
-                                    ),
-                                  );
-                                  if (result != null) {
-                                    loadTasks();
+                                  if (noConnection) {
+                                    Constants.showSnackBar(
+                                      'You can only view your tasks summary in offline mode.',
+                                      true,
+                                      context,
+                                    );
+                                  } else {
+                                    var result =
+                                        await Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => AddTask(
+                                            false, '', '', '', true, 1, false),
+                                      ),
+                                    );
+                                    if (result != null) {
+                                      loadTasks();
+                                    }
                                   }
                                 },
                                 child: Column(
@@ -338,6 +487,36 @@ class _DashboardState extends State<Dashboard> {
                       ),
                     ),
                   ],
+                ),
+              ),
+              Visibility(
+                visible: noConnection,
+                child: Container(
+                  width: double.infinity,
+                  color: Colors.white,
+                  padding: EdgeInsets.all(5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.cloud_off_outlined,
+                        color: Colors.blue[900],
+                        size: 20,
+                      ),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Text(
+                        'Offline mode is activated',
+                        style: TextStyle(
+                          color: Colors.blue[900],
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
             ],
