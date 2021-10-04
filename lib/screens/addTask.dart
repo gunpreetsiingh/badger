@@ -1,6 +1,14 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:android_alarm_manager/android_alarm_manager.dart';
+import 'package:badger/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+import 'package:intl/intl.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 class AddTask extends StatefulWidget {
   bool update;
@@ -28,6 +36,11 @@ class _AddTaskState extends State<AddTask> {
   String fromTime = '', toTime = '';
   bool time1 = true, time2 = false;
 
+  String dateTimeWorking = '', dateTimePersonal = '';
+  late DateTime finalWorking, finalPersonal;
+
+  String tokenId = '';
+
   @override
   void initState() {
     // TODO: implement initState
@@ -36,7 +49,35 @@ class _AddTaskState extends State<AddTask> {
     prefill();
   }
 
+  Future<Response> triggerNotification() async {
+    print('triggering notification for ${time1 ? fromTime : toTime}');
+    String priorityValue = one ? 'Low' : (two ? 'Medium' : 'High');
+    return post(
+      Uri.parse('https://onesignal.com/api/v1/notifications'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        "app_id": '7c82bf82-8c5f-497e-a26f-0977f1a15b28',
+        "include_player_ids": [tokenId],
+        "android_accent_color": "006699",
+        "small_icon": "logo_small",
+        "large_icon": "https://raw.githubusercontent.com/gunpreetsiingh/badger/master/assets/logoSmall.png",
+        "headings": {"en": 'Task: ${txtName.text}'},
+        "contents": {"en": 'Priority: $priorityValue! Complete your task.'},
+        "delayed_option": "timezone",
+        "delivery_time_of_day": "${time1 ? fromTime : toTime}",
+      }),
+    );
+  }
+
   void load() async {
+    print(DateTime.now());
+    if (Platform.isAndroid) {
+      var status = await OneSignal.shared.getDeviceState();
+      tokenId = status!.userId!.toString();
+      print('token: $tokenId');
+    }
     setState(() {
       isLoading = true;
     });
@@ -61,6 +102,12 @@ class _AddTaskState extends State<AddTask> {
       }
     });
     print('$fromTime - $toTime');
+    dateTimeWorking =
+        DateFormat('yyyy-MM-dd').format(DateTime.now()) + ' ' + fromTime;
+    dateTimePersonal =
+        DateFormat('yyyy-MM-dd').format(DateTime.now()) + ' ' + toTime;
+    finalWorking = DateTime.parse(dateTimeWorking);
+    finalPersonal = DateTime.parse(dateTimePersonal).add(Duration(seconds: 1));
     setState(() {
       isLoading = false;
     });
@@ -113,6 +160,11 @@ class _AddTaskState extends State<AddTask> {
       'timestamp': DateTime.now().toString(),
       'completed': false,
     });
+    triggerNotification();
+    Constants.showSnackBar(
+        'All set! You\'ll receive a notification for this task on time.',
+        false,
+        context);
     Navigator.of(context).pop(true);
   }
 
@@ -126,7 +178,7 @@ class _AddTaskState extends State<AddTask> {
     Navigator.of(context).pop(true);
   }
 
-  void alterCompletion(bool status){
+  void alterCompletion(bool status) {
     FirebaseFirestore.instance
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -521,14 +573,19 @@ class _AddTaskState extends State<AddTask> {
                                                 child: Padding(
                                                   padding: EdgeInsets.all(5),
                                                   child: Text(
-                                                    widget.complete ? 'Mark Uncomplete' : 'Mark Complete',
+                                                    widget.complete
+                                                        ? 'Mark Uncomplete'
+                                                        : 'Mark Complete',
                                                     style: TextStyle(
                                                       color: Colors.white,
                                                     ),
                                                   ),
                                                 ),
                                                 onPressed: () {
-                                                  alterCompletion(widget.complete ? false : true);
+                                                  alterCompletion(
+                                                      widget.complete
+                                                          ? false
+                                                          : true);
                                                 },
                                               ),
                                             ),

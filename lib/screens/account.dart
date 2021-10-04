@@ -75,7 +75,8 @@ class _AccountState extends State<Account> {
                                   physics: BouncingScrollPhysics(),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.max,
                                     children: [
                                       Row(
@@ -102,7 +103,8 @@ class _AccountState extends State<Account> {
                                                 Container(
                                                   decoration: BoxDecoration(
                                                     borderRadius:
-                                                        BorderRadius.circular(64),
+                                                        BorderRadius.circular(
+                                                            64),
                                                     border: Border.all(
                                                       color: Colors.black,
                                                       width: 2,
@@ -110,7 +112,8 @@ class _AccountState extends State<Account> {
                                                   ),
                                                   child: ClipRRect(
                                                     borderRadius:
-                                                        BorderRadius.circular(64),
+                                                        BorderRadius.circular(
+                                                            64),
                                                     child: Image(
                                                       image: NetworkImage(FirebaseAuth
                                                                   .instance
@@ -135,23 +138,27 @@ class _AccountState extends State<Account> {
                                                           .toString() !=
                                                       'null',
                                                   child: Text(
-                                                    FirebaseAuth.instance
-                                                        .currentUser!.displayName
+                                                    FirebaseAuth
+                                                        .instance
+                                                        .currentUser!
+                                                        .displayName
                                                         .toString(),
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                     style: TextStyle(
                                                       color: Colors.black,
                                                       fontSize: 16,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                     ),
                                                   ),
                                                 ),
                                                 Text(
-                                                  FirebaseAuth
-                                                      .instance.currentUser!.email
+                                                  FirebaseAuth.instance
+                                                      .currentUser!.email
                                                       .toString(),
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                   style: TextStyle(
                                                     color: Colors.black
                                                         .withOpacity(0.5),
@@ -170,51 +177,17 @@ class _AccountState extends State<Account> {
                                       SizedBox(
                                         height: 25,
                                       ),
-                                      Container(
-                                        padding: EdgeInsets.all(15),
-                                        decoration: BoxDecoration(
-                                          color: Colors.blue[900],
-                                          borderRadius: BorderRadius.circular(50),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                'Time Wasting Apps',
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              width: 10,
-                                            ),
-                                            Icon(
-                                              Icons.arrow_forward_ios_rounded,
-                                              color: Colors.white,
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        height: 15,
-                                      ),
                                       GestureDetector(
-                                        onTap: (){
-                                          Navigator.of(context).pushNamed('/working-hours');
+                                        onTap: () {
+                                          Navigator.of(context)
+                                              .pushNamed('/all-apps');
                                         },
                                         child: Container(
                                           padding: EdgeInsets.all(15),
                                           decoration: BoxDecoration(
                                             color: Colors.blue[900],
-                                            borderRadius: BorderRadius.circular(50),
+                                            borderRadius:
+                                                BorderRadius.circular(50),
                                           ),
                                           child: Row(
                                             mainAxisAlignment:
@@ -224,8 +197,9 @@ class _AccountState extends State<Account> {
                                             children: [
                                               Expanded(
                                                 child: Text(
-                                                  'Working Hours',
-                                                  overflow: TextOverflow.ellipsis,
+                                                  'Time Wasting Apps',
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                   style: TextStyle(
                                                     color: Colors.white,
                                                     fontSize: 20,
@@ -248,14 +222,60 @@ class _AccountState extends State<Account> {
                                         height: 15,
                                       ),
                                       GestureDetector(
-                                        onTap: (){
-                                          Navigator.of(context).pushNamed('/completed-tasks');
+                                        onTap: () {
+                                          Navigator.of(context)
+                                              .pushNamed('/working-hours');
                                         },
                                         child: Container(
                                           padding: EdgeInsets.all(15),
                                           decoration: BoxDecoration(
                                             color: Colors.blue[900],
-                                            borderRadius: BorderRadius.circular(50),
+                                            borderRadius:
+                                                BorderRadius.circular(50),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  'Working Hours',
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: 10,
+                                              ),
+                                              Icon(
+                                                Icons.arrow_forward_ios_rounded,
+                                                color: Colors.white,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        height: 15,
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.of(context)
+                                              .pushNamed('/completed-tasks');
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.all(15),
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue[900],
+                                            borderRadius:
+                                                BorderRadius.circular(50),
                                           ),
                                           child: Row(
                                             mainAxisAlignment:
@@ -266,7 +286,8 @@ class _AccountState extends State<Account> {
                                               Expanded(
                                                 child: Text(
                                                   'Completed Tasks',
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                   style: TextStyle(
                                                     color: Colors.white,
                                                     fontSize: 20,
@@ -334,7 +355,8 @@ class _AccountState extends State<Account> {
                                             ),
                                           ),
                                           onPressed: () async {
-                                            await FirebaseAuth.instance.signOut();
+                                            await FirebaseAuth.instance
+                                                .signOut();
                                             Navigator.of(context)
                                                 .pushReplacementNamed(
                                                     '/authentication');

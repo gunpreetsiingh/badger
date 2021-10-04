@@ -33,10 +33,10 @@ class _WorkingHoursState extends State<WorkingHours> {
       setState(() {
         if (from) {
           fromTime =
-              '${picked.hour < 10 ? '0${picked.hour}' : picked.hour}:${picked.minute.toString() == '0' ? '00' : picked.minute}';
+              '${picked.hour < 10 ? '0${picked.hour}' : picked.hour}:${picked.minute.toString() == '0' ? '00' : (picked.minute < 10 ? '0${picked.minute}' : '${picked.minute}')}';
         } else {
           toTime =
-              '${picked.hour < 10 ? '0${picked.hour}' : picked.hour}:${picked.minute.toString() == '0' ? '00' : picked.minute}';
+              '${picked.hour < 10 ? '0${picked.hour}' : picked.hour}:${picked.minute.toString() == '0' ? '00' : (picked.minute < 10 ? '0${picked.minute}' : '${picked.minute}')}';
         }
       });
     }
