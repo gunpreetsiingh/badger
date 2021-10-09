@@ -34,7 +34,6 @@ dependencies:
   hive: ^2.0.4
   hive_flutter: ^1.1.0
   device_apps: ^2.1.1
-  android_alarm_manager: ^2.0.2
   onesignal_flutter: ^3.2.3
   http: ^0.13.3
 

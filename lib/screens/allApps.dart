@@ -1,3 +1,4 @@
+import 'package:badger/constants.dart';
 import 'package:device_apps/device_apps.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -67,7 +68,13 @@ class _AllAppsState extends State<AllApps> {
                     width: 5,
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Constants.showSnackBar(
+                        '${app.appName} added successfully.',
+                        false,
+                        context,
+                      );
+                    },
                     icon: Icon(
                       Icons.add_circle_rounded,
                       color: Colors.white,

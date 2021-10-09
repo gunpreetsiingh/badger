@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:badger/constants.dart';
 import 'package:badger/screens/addTask.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -5,7 +8,9 @@ import 'package:connectivity/connectivity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:lottie/lottie.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -28,6 +33,8 @@ class _DashboardState extends State<Dashboard> {
 
   var tasksGroup;
   Map offlineTasks = {};
+
+  String tokenId = '';
 
   @override
   void initState() {
@@ -52,6 +59,34 @@ class _DashboardState extends State<Dashboard> {
       });
     });
     loadTasks();
+  }
+
+  Future<Response> triggerNotification() async {
+    if (Platform.isAndroid) {
+      var status = await OneSignal.shared.getDeviceState();
+      tokenId = status!.userId!.toString();
+      print('token: $tokenId');
+    }
+    print('triggered notification');
+    return post(
+      Uri.parse('https://onesignal.com/api/v1/notifications'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        "app_id": '7c82bf82-8c5f-497e-a26f-0977f1a15b28',
+        "include_player_ids": [tokenId],
+        "android_accent_color": "006699",
+        "small_icon": "logo_small",
+        "large_icon":
+            "https://raw.githubusercontent.com/gunpreetsiingh/badger/master/assets/logoSmall.png",
+        "headings": {"en": 'Reminder! You have pending tasks to complete.'},
+        "contents": {"en": 'If not, mark them complete.'},
+        "delayed_option": "timezone",
+        "delivery_time_of_day":
+            "${DateTime.now().add(Duration(minutes: 10)).toString()}",
+      }),
+    );
   }
 
   void loadTasks() async {
@@ -130,6 +165,11 @@ class _DashboardState extends State<Dashboard> {
           ));
         });
       });
+    }
+    if(listTasks.isNotEmpty){
+      triggerNotification();
+    }else{
+      print('empty list');
     }
     setState(() {
       isLoading = false;
@@ -236,6 +276,11 @@ class _DashboardState extends State<Dashboard> {
           Constants.hiveDB.put('tasks', offlineTasks);
         }
       });
+    }
+    if(listTasks.isNotEmpty){
+      triggerNotification();
+    }else{
+      print('empty list');
     }
     setState(() {
       isLoading = false;
