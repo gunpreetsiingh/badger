@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:lottie/lottie.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:system_settings/system_settings.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -61,7 +62,7 @@ class _DashboardState extends State<Dashboard> {
     loadTasks();
   }
 
-  Future<Response> triggerNotification() async {
+  Future<Response> triggerNotification(int minutes) async {
     if (Platform.isAndroid) {
       var status = await OneSignal.shared.getDeviceState();
       tokenId = status!.userId!.toString();
@@ -82,9 +83,10 @@ class _DashboardState extends State<Dashboard> {
             "https://raw.githubusercontent.com/gunpreetsiingh/badger/master/assets/logoSmall.png",
         "headings": {"en": 'Reminder! You have pending tasks to complete.'},
         "contents": {"en": 'If not, mark them complete.'},
+        "android_sound": "alert",
         "delayed_option": "timezone",
         "delivery_time_of_day":
-            "${DateTime.now().add(Duration(minutes: 10)).toString()}",
+            "${DateTime.now().add(Duration(minutes: minutes)).toString()}",
       }),
     );
   }
@@ -166,13 +168,16 @@ class _DashboardState extends State<Dashboard> {
         });
       });
     }
-    if(listTasks.isNotEmpty){
-      triggerNotification();
-    }else{
+    if (listTasks.isNotEmpty) {
+      startNotifications();
+    } else {
       print('empty list');
     }
     setState(() {
       isLoading = false;
+      if (!Constants.hiveDB.get('permissions')) {
+        showSettings();
+      }
     });
   }
 
@@ -277,14 +282,110 @@ class _DashboardState extends State<Dashboard> {
         }
       });
     }
-    if(listTasks.isNotEmpty){
-      triggerNotification();
-    }else{
+    if (listTasks.isNotEmpty) {
+      startNotifications();
+    } else {
       print('empty list');
     }
     setState(() {
       isLoading = false;
+      if (!Constants.hiveDB.get('permissions')) {
+        showSettings();
+      }
     });
+  }
+
+  void showSettings() {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 200,
+          color: Colors.blue[900],
+          padding: EdgeInsets.all(15),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Please give all the notification permissions to Badger for the best customised reminders and alerts.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(
+                  height: 15,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15.0),
+                        color: Colors.white,
+                        shape: BoxShape.rectangle,
+                      ),
+                      child: TextButton(
+                        child: Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Text(
+                            'Ask Me Later',
+                            style: TextStyle(
+                              color: Colors.blue[900],
+                            ),
+                          ),
+                        ),
+                        onPressed: () {
+                          Constants.hiveDB.put('permissions', false);
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15.0),
+                        color: Colors.orange,
+                        shape: BoxShape.rectangle,
+                      ),
+                      child: TextButton(
+                        child: Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Text(
+                            'Open Settings',
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        onPressed: () async {
+                          Constants.hiveDB.put('permissions', true);
+                          Navigator.of(context).pop();
+                          await SystemSettings.appNotifications();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void startNotifications() async {
+    int addMinutes = 15;
+    for (int i = 1; i <= 5; i++) {
+      await triggerNotification(addMinutes);
+      addMinutes += 15;
+    }
   }
 
   @override

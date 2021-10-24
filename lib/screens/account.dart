@@ -1,5 +1,7 @@
+import 'package:badger/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:system_settings/system_settings.dart';
 
 class Account extends StatefulWidget {
   const Account({Key? key}) : super(key: key);
@@ -10,6 +12,92 @@ class Account extends StatefulWidget {
 
 class _AccountState extends State<Account> {
   var size;
+
+  void showSettings() {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 200,
+          color: Colors.blue[900],
+          padding: EdgeInsets.all(15),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Please give all the notification permissions to Badger for the best customised reminders and alerts.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(
+                  height: 15,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15.0),
+                        color: Colors.white,
+                        shape: BoxShape.rectangle,
+                      ),
+                      child: TextButton(
+                        child: Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Text(
+                            'Ask Me Later',
+                            style: TextStyle(
+                              color: Colors.blue[900],
+                            ),
+                          ),
+                        ),
+                        onPressed: () {
+                          Constants.hiveDB.put('permissions', false);
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15.0),
+                        color: Colors.orange,
+                        shape: BoxShape.rectangle,
+                      ),
+                      child: TextButton(
+                        child: Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Text(
+                            'Open Settings',
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        onPressed: () async {
+                          Constants.hiveDB.put('permissions', true);
+                          Navigator.of(context).pop();
+                          await SystemSettings.appNotifications();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     size = MediaQuery.of(context).size;
@@ -286,6 +374,49 @@ class _AccountState extends State<Account> {
                                               Expanded(
                                                 child: Text(
                                                   'Completed Tasks',
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: 10,
+                                              ),
+                                              Icon(
+                                                Icons.arrow_forward_ios_rounded,
+                                                color: Colors.white,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        height: 15,
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          showSettings();
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.all(15),
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue[900],
+                                            borderRadius:
+                                                BorderRadius.circular(50),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  'Enable Customised Alerts',
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                   style: TextStyle(

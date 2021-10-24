@@ -46,6 +46,7 @@ class _AddTaskState extends State<AddTask> {
     super.initState();
     load();
     prefill();
+    // triggerNotification();
   }
 
   Future<Response> triggerNotification() async {
@@ -61,9 +62,11 @@ class _AddTaskState extends State<AddTask> {
         "include_player_ids": [tokenId],
         "android_accent_color": "006699",
         "small_icon": "logo_small",
-        "large_icon": "https://raw.githubusercontent.com/gunpreetsiingh/badger/master/assets/logoSmall.png",
+        "large_icon":
+            "https://raw.githubusercontent.com/gunpreetsiingh/badger/master/assets/logoSmall.png",
         "headings": {"en": 'Task: ${txtName.text}'},
         "contents": {"en": 'Priority: $priorityValue! Complete your task.'},
+        "android_sound": "alert",
         "delayed_option": "timezone",
         "delivery_time_of_day": "${time1 ? fromTime : toTime}",
       }),
@@ -145,7 +148,7 @@ class _AddTaskState extends State<AddTask> {
     }
   }
 
-  void createTask() {
+  void createTask() async {
     FirebaseFirestore.instance
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -159,7 +162,8 @@ class _AddTaskState extends State<AddTask> {
       'timestamp': DateTime.now().toString(),
       'completed': false,
     });
-    triggerNotification();
+    var response = await triggerNotification();
+    print('response: ${response.body}');
     Constants.showSnackBar(
         'All set! You\'ll receive a notification for this task on time.',
         false,

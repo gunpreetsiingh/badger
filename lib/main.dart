@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:badger/constants.dart';
 import 'package:badger/screens/account.dart';
 import 'package:badger/screens/addTask.dart';
 import 'package:badger/screens/allApps.dart';
@@ -22,6 +23,9 @@ void main() async {
   await Hive.initFlutter();
   if (!Hive.isBoxOpen('myBox')) {
     await Hive.openBox('myBox');
+  }
+  if (!Constants.hiveDB.containsKey('permissions')) {
+    Constants.hiveDB.put('permissions', false);
   }
   initOneSignal();
   runApp(MyApp());
