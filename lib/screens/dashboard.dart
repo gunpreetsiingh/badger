@@ -382,9 +382,16 @@ class _DashboardState extends State<Dashboard> {
 
   void startNotifications() async {
     int addMinutes = 15;
+    // notifications for today
     for (int i = 1; i <= 5; i++) {
       await triggerNotification(addMinutes);
       addMinutes += 15;
+    }
+    // notifications for the following days
+    addMinutes = 1440;
+    for (int i = 1; i <= 7; i++) {
+      await triggerNotification(addMinutes);
+      addMinutes += 1440;
     }
   }
 
