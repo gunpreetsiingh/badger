@@ -390,7 +390,7 @@ class _DashboardState extends State<Dashboard> {
     // notifications for the following days
     addMinutes = 1440;
     for (int i = 1; i <= 7; i++) {
-      await triggerNotification(addMinutes);
+      await triggerNotification(addMinutes); 
       addMinutes += 1440;
     }
   }
