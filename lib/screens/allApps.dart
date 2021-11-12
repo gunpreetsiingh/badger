@@ -14,6 +14,7 @@ class _AllAppsState extends State<AllApps> {
   var size;
   List<Widget> allAppsList = [];
   bool isLoading = true, isEmpty = false;
+  var addedApps = [];
 
   List<String> packages = [
     'com.facebook.katana',
@@ -32,6 +33,13 @@ class _AllAppsState extends State<AllApps> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    if (!Constants.hiveDB.containsKey('addedApps')) {
+      Constants.hiveDB.put('addedApps', []);
+    }
+    addedApps = Constants.hiveDB.get('addedApps');
+    if (addedApps.isEmpty) {
+      addedApps = [];
+    }
     loadApps();
   }
 
@@ -69,15 +77,25 @@ class _AllAppsState extends State<AllApps> {
                   ),
                   IconButton(
                     onPressed: () {
+                      if (addedApps.contains(app!.appName)) {
+                        addedApps.remove(app!.appName);
+                      } else {
+                        addedApps.add(app!.appName);
+                      }
                       Constants.showSnackBar(
-                        '${app.appName} added successfully.',
+                        '${app.appName} ${addedApps.contains(app!.appName) ? 'removed' : 'added'} successfully.',
                         false,
                         context,
                       );
+                      Constants.hiveDB.put('addedApps', addedApps);
                     },
                     icon: Icon(
-                      Icons.add_circle_rounded,
-                      color: Colors.white,
+                      addedApps.contains(app!.appName)
+                          ? Icons.remove_circle_outline_rounded
+                          : Icons.add_circle_rounded,
+                      color: addedApps.contains(app!.appName)
+                          ? Colors.red
+                          : Colors.white,
                     ),
                   )
                 ],

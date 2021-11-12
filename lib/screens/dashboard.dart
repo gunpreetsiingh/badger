@@ -36,6 +36,7 @@ class _DashboardState extends State<Dashboard> {
   Map offlineTasks = {};
 
   String tokenId = '';
+  String notificationMessage = '';
 
   @override
   void initState() {
@@ -81,9 +82,10 @@ class _DashboardState extends State<Dashboard> {
         "small_icon": "logo_small",
         "large_icon":
             "https://raw.githubusercontent.com/gunpreetsiingh/badger/master/assets/logoSmall.png",
-        "headings": {"en": 'Reminder! You have pending tasks to complete.'},
-        "contents": {"en": 'If not, mark them complete.'},
+        "headings": {"en": 'Don\'t forget!!!'},
+        "contents": {"en": '$notificationMessage'},
         "android_sound": "alert",
+        "priority": 10,
         "delayed_option": "timezone",
         "delivery_time_of_day":
             "${DateTime.now().add(Duration(minutes: minutes)).toString()}",
@@ -107,10 +109,15 @@ class _DashboardState extends State<Dashboard> {
       w = size.width;
     });
     listTasks.clear();
+    notificationMessage =
+        'Don\'t forget! You have pending tasks to complete.\n';
     if (connectivityResult == ConnectivityResult.none) {
       loadTasksOffline();
     } else {
       loadTasksOnline();
+    }
+    if (listTasks.isNotEmpty) {
+      startNotifications();
     }
   }
 
@@ -124,6 +131,7 @@ class _DashboardState extends State<Dashboard> {
       setState(() {
         isEmpty = false;
         data.forEach((key, value) {
+          notificationMessage += '${value['name']}\n';
           listTasks.add(GestureDetector(
             onTap: () async {
               Constants.showSnackBar(
@@ -168,11 +176,6 @@ class _DashboardState extends State<Dashboard> {
         });
       });
     }
-    if (listTasks.isNotEmpty) {
-      startNotifications();
-    } else {
-      print('empty list');
-    }
     setState(() {
       isLoading = false;
       if (!Constants.hiveDB.get('permissions')) {
@@ -216,6 +219,7 @@ class _DashboardState extends State<Dashboard> {
               'completed': element['completed'],
             };
           }
+          notificationMessage += '${element['name']}\n';
           listTasks.add(GestureDetector(
             onTap: () async {
               if (noConnection) {
@@ -281,11 +285,6 @@ class _DashboardState extends State<Dashboard> {
           Constants.hiveDB.put('tasks', offlineTasks);
         }
       });
-    }
-    if (listTasks.isNotEmpty) {
-      startNotifications();
-    } else {
-      print('empty list');
     }
     setState(() {
       isLoading = false;
@@ -390,7 +389,7 @@ class _DashboardState extends State<Dashboard> {
     // notifications for the following days
     addMinutes = 1440;
     for (int i = 1; i <= 7; i++) {
-      await triggerNotification(addMinutes); 
+      await triggerNotification(addMinutes);
       addMinutes += 1440;
     }
   }

@@ -67,6 +67,7 @@ class _AddTaskState extends State<AddTask> {
         "headings": {"en": 'Task: ${txtName.text}'},
         "contents": {"en": 'Priority: $priorityValue! Complete your task.'},
         "android_sound": "alert",
+        "priority": 10,
         "delayed_option": "timezone",
         "delivery_time_of_day": "${time1 ? fromTime : toTime}",
       }),
