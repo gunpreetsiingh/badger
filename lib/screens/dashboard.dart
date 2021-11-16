@@ -112,16 +112,18 @@ class _DashboardState extends State<Dashboard> {
     notificationMessage =
         'Don\'t forget! You have pending tasks to complete.\n';
     if (connectivityResult == ConnectivityResult.none) {
-      loadTasksOffline();
+      await loadTasksOffline();
     } else {
-      loadTasksOnline();
+      await loadTasksOnline();
     }
     if (listTasks.isNotEmpty) {
       startNotifications();
+    }else{
+      print('false');
     }
   }
 
-  void loadTasksOffline() {
+  Future<void> loadTasksOffline() async {
     Map data = Constants.hiveDB.get('tasks');
     if (data.isEmpty) {
       setState(() {
@@ -184,7 +186,7 @@ class _DashboardState extends State<Dashboard> {
     });
   }
 
-  void loadTasksOnline() async {
+  Future<void> loadTasksOnline() async {
     setState(() {
       isLoading = true;
       h1 = size.height * 0.80;

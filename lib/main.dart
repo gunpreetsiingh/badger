@@ -1,9 +1,5 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:badger/constants.dart';
 import 'package:badger/screens/account.dart';
-import 'package:badger/screens/addTask.dart';
 import 'package:badger/screens/allApps.dart';
 import 'package:badger/screens/authentication.dart';
 import 'package:badger/screens/completedTasks.dart';
@@ -14,7 +10,6 @@ import 'package:badger/screens/workingHours.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:http/http.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 void main() async {
