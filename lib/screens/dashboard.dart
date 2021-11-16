@@ -208,79 +208,83 @@ class _DashboardState extends State<Dashboard> {
     } else {
       setState(() {
         isEmpty = false;
-        tasksGroup.forEach((element) {
-          if (!noConnection) {
-            offlineTasks[element.id] = {
-              'name': element['name'],
-              'description': element['description'],
-              'working': element['working'],
-              'importance': element['importance'],
-              'timestamp': element['timestamp'],
-              'completed': element['completed'],
-            };
-          }
-          notificationMessage += '${element['name']}\n';
-          listTasks.add(GestureDetector(
-            onTap: () async {
-              if (noConnection) {
-                Constants.showSnackBar(
-                  'You can only view your tasks summary in offline mode.',
-                  true,
-                  context,
-                );
-              } else {
-                var result = await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => AddTask(
+        tasksGroup.forEach(
+          (element) {
+            if (!noConnection) {
+              offlineTasks[element.id] = {
+                'name': element['name'],
+                'description': element['description'],
+                'working': element['working'],
+                'importance': element['importance'],
+                'timestamp': element['timestamp'],
+                'completed': element['completed'],
+              };
+            }
+            notificationMessage += '${element['name']}\n';
+            listTasks.add(
+              GestureDetector(
+                onTap: () async {
+                  if (noConnection) {
+                    Constants.showSnackBar(
+                      'You can only view your tasks summary in offline mode.',
                       true,
-                      element.id,
-                      element['name'],
-                      element['description'],
-                      element['working'],
-                      element['importance'],
-                      element['completed'] ?? false,
-                    ),
-                  ),
-                );
-                if (result != null) {
-                  loadTasks();
-                }
-              }
-            },
-            child: new Container(
-              padding: EdgeInsets.all(15),
-              margin: EdgeInsets.only(bottom: 10),
-              decoration: BoxDecoration(
-                color: Colors.orange[800],
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Text(
-                      element['name'],
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                      context,
+                    );
+                  } else {
+                    var result = await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => AddTask(
+                          true,
+                          element.id,
+                          element['name'],
+                          element['description'],
+                          element['working'],
+                          element['importance'],
+                          element['completed'] ?? false,
+                        ),
                       ),
-                    ),
+                    );
+                    if (result != null) {
+                      loadTasks();
+                    }
+                  }
+                },
+                child: new Container(
+                  padding: EdgeInsets.all(15),
+                  margin: EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.orange[800],
+                    borderRadius: BorderRadius.circular(50),
                   ),
-                  SizedBox(
-                    width: 10,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          element['name'],
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: Colors.white,
+                      ),
+                    ],
                   ),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: Colors.white,
-                  )
-                ],
+                ),
               ),
-            ),
-          ));
-        });
+            );
+          },
+        );
         if (!noConnection) {
           Constants.hiveDB.put('tasks', offlineTasks);
         }
