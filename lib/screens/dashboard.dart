@@ -11,7 +11,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:lottie/lottie.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:system_alert_window/system_alert_window.dart' as saw;
 import 'package:system_settings/system_settings.dart';
+import 'package:workmanager/workmanager.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -94,6 +96,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void loadTasks() async {
+    await saw.SystemAlertWindow.requestPermissions;
     connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
       noConnection = true;
@@ -117,7 +120,7 @@ class _DashboardState extends State<Dashboard> {
       loadTasksOnline();
     }
     if (listTasks.isNotEmpty) {
-      startNotifications();
+      // startNotifications();
     }
   }
 
