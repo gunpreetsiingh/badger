@@ -44,6 +44,7 @@ class _AllAppsState extends State<AllApps> {
   }
 
   void loadApps() async {
+    allAppsList.clear();
     try {
       packages.forEach((element) async {
         bool isInstalled = await DeviceApps.isAppInstalled(element);
@@ -77,25 +78,24 @@ class _AllAppsState extends State<AllApps> {
                   ),
                   IconButton(
                     onPressed: () {
-                      if (addedApps.contains(app!.appName)) {
-                        addedApps.remove(app!.appName);
+                      if (addedApps.contains(app.appName)) {
+                        addedApps.remove(app.appName);
                       } else {
-                        addedApps.add(app!.appName);
+                        addedApps.add(app.appName);
                       }
                       Constants.showSnackBar(
-                        '${app.appName} ${addedApps.contains(app!.appName) ? 'removed' : 'added'} successfully.',
+                        '${app.appName} ${addedApps.contains(app.appName) ? 'added' : 'removed'} successfully.',
                         false,
                         context,
                       );
                       Constants.hiveDB.put('addedApps', addedApps);
+                      loadApps();
                     },
                     icon: Icon(
-                      addedApps.contains(app!.appName)
+                      addedApps.contains(app.appName)
                           ? Icons.remove_circle_outline_rounded
                           : Icons.add_circle_rounded,
-                      color: addedApps.contains(app!.appName)
-                          ? Colors.red
-                          : Colors.white,
+                      color: Colors.white,
                     ),
                   )
                 ],

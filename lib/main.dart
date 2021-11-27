@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:badger/constants.dart';
 import 'package:badger/screens/account.dart';
-import 'package:badger/screens/addTask.dart';
 import 'package:badger/screens/allApps.dart';
 import 'package:badger/screens/authentication.dart';
 import 'package:badger/screens/completedTasks.dart';
