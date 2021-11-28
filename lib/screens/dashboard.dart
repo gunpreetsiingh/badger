@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:badger/constants.dart';
+import 'package:badger/main.dart';
 import 'package:badger/screens/addTask.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity/connectivity.dart';
@@ -11,9 +12,23 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:lottie/lottie.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:system_alert_window/system_alert_window.dart' as saw;
 import 'package:system_settings/system_settings.dart';
 import 'package:workmanager/workmanager.dart';
+import 'package:system_alert_window/system_alert_window.dart' as saw;
+
+void callBack(tag) {
+  print('tag: $tag');
+  saw.SystemAlertWindow.closeSystemWindow();
+}
+
+void callBackDispatcher() async {
+  Workmanager().executeTask((taskName, inputData) async {
+    print('================ bg task');
+    Constants.showOverlay();
+    print('================ bg task completed');
+    return Future.value(true);
+  });
+}
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -44,6 +59,7 @@ class _DashboardState extends State<Dashboard> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    saw.SystemAlertWindow.registerOnClickListener(callBack);
     subscription = Connectivity()
         .onConnectivityChanged
         .listen((ConnectivityResult result) {
@@ -96,7 +112,9 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void loadTasks() async {
-    await saw.SystemAlertWindow.requestPermissions;
+    saw.SystemAlertWindow.checkPermissions;
+    await Workmanager().initialize(callBackDispatcher, isInDebugMode: false);
+    await manageOverlay();
     connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
       noConnection = true;
@@ -119,12 +137,23 @@ class _DashboardState extends State<Dashboard> {
     } else {
       await loadTasksOnline();
     }
-    if (listTasks.isNotEmpty) {
-      // startNotifications();
-      startNotifications();
-    }else{
-      print('false');
-    }
+    // if (listTasks.isNotEmpty) {
+    //   // startNotifications();
+    //   startNotifications();
+    // } else {
+    //   print('false');
+    // }
+  }
+
+  Future<void> manageOverlay() async {
+    print('managing overlay...');
+    await Workmanager().registerPeriodicTask(
+      '1',
+      'unique_task_name',
+      frequency: Duration(minutes: 30),
+      initialDelay: Duration(minutes: 15),
+    );
+    print('work manager task registered successfully');
   }
 
   Future<void> loadTasksOffline() async {
