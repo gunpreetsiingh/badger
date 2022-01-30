@@ -15,6 +15,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:system_settings/system_settings.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:system_alert_window/system_alert_window.dart' as saw;
+import 'package:intl/intl.dart';
 
 void callBack(tag) {
   print('tag: $tag');
@@ -54,6 +55,16 @@ class _DashboardState extends State<Dashboard> {
 
   String tokenId = '';
   String notificationMessage = '';
+
+  Map offlineData = {};
+  bool professionalSelected = true, firstTime = true;
+
+  late var dataTiming;
+  String fromTime = '', toTime = '';
+  bool time1 = true, time2 = false;
+
+  String dateTimeWorking = '', dateTimePersonal = '';
+  late DateTime finalWorking, finalPersonal;
 
   @override
   void initState() {
@@ -111,11 +122,61 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
+  Future<void> loadTimings() async {
+    DocumentSnapshot doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get();
+    dataTiming = doc.data();
+    setState(() {
+      try {
+        fromTime = dataTiming['from'];
+        toTime = dataTiming['to'];
+        if (fromTime.toString() == 'null') {
+          fromTime = '09:00';
+        }
+        if (toTime.toString() == 'null') {
+          toTime = '17:00';
+        }
+      } catch (e) {
+        fromTime = '09:00';
+        toTime = '17:00';
+      }
+    });
+    print('$fromTime - $toTime');
+    dateTimeWorking =
+        DateFormat('yyyy-MM-dd').format(DateTime.now()) + ' ' + fromTime;
+    dateTimePersonal =
+        DateFormat('yyyy-MM-dd').format(DateTime.now()) + ' ' + toTime;
+    finalWorking = DateTime.parse(dateTimeWorking);
+    finalPersonal = DateTime.parse(dateTimePersonal).add(Duration(seconds: 1));
+    setState(() {
+      if (DateTime.now().isAfter(finalWorking) &&
+          DateTime.now().isBefore(finalPersonal)) {
+        professionalSelected = true;
+      } else {
+        professionalSelected = false;
+      }
+    });
+  }
+
   void loadTasks() async {
+    setState(() {
+      isLoading = true;
+    });
     saw.SystemAlertWindow.checkPermissions;
-    await Workmanager().initialize(callBackDispatcher, isInDebugMode: false);
-    await manageOverlay();
+    if (firstTime) {
+      await Workmanager().initialize(callBackDispatcher, isInDebugMode: false);
+      await manageOverlay();
+      await loadTimings();
+    }
     connectivityResult = await (Connectivity().checkConnectivity());
+    setState(() {
+      h1 = 0;
+      h2 = 0;
+      h3 = 0;
+      w = 0;
+    });
     if (connectivityResult == ConnectivityResult.none) {
       noConnection = true;
     } else {
@@ -137,6 +198,13 @@ class _DashboardState extends State<Dashboard> {
     } else {
       await loadTasksOnline();
     }
+    setState(() {
+      if (listTasks.isEmpty) {
+        isEmpty = true;
+      } else {
+        isEmpty = false;
+      }
+    });
     // if (listTasks.isNotEmpty) {
     //   // startNotifications();
     //   startNotifications();
@@ -150,69 +218,160 @@ class _DashboardState extends State<Dashboard> {
     await Workmanager().registerPeriodicTask(
       '1',
       'unique_task_name',
-      frequency: Duration(minutes: 30),
+      frequency: Duration(minutes: 15),
       initialDelay: Duration(minutes: 15),
     );
     print('work manager task registered successfully');
   }
 
   Future<void> loadTasksOffline() async {
-    Map data = Constants.hiveDB.get('tasks');
-    if (data.isEmpty) {
+    if (firstTime) {
+      offlineData = Constants.hiveDB.get('tasks');
+    }
+    if (offlineData.isEmpty) {
       setState(() {
         isEmpty = true;
       });
     } else {
       setState(() {
         isEmpty = false;
-        data.forEach((key, value) {
+        offlineData.forEach((key, value) {
           notificationMessage += '${value['name']}\n';
-          listTasks.add(GestureDetector(
-            onTap: () async {
-              Constants.showSnackBar(
-                'You can only view your tasks summary in offline mode.',
-                true,
-                context,
-              );
-            },
-            child: new Container(
-              padding: EdgeInsets.all(15),
-              margin: EdgeInsets.only(bottom: 10),
-              decoration: BoxDecoration(
-                color: Colors.orange[800],
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Text(
-                      value['name'],
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+          if (professionalSelected) {
+            if (value['working']) {
+              listTasks.add(
+                GestureDetector(
+                  onTap: () async {
+                    Constants.showSnackBar(
+                      'You can only view your tasks summary in offline mode.',
+                      true,
+                      context,
+                    );
+                  },
+                  child: new Container(
+                    padding: EdgeInsets.all(15),
+                    margin: EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.orange[800],
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ),
+                          child: Text(
+                            value['importance'].toString(),
+                            style: TextStyle(
+                              color: Colors.orange[800],
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Expanded(
+                          child: Text(
+                            value['name'],
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Icon(
+                          Icons.edit_rounded,
+                          color: Colors.white,
+                        )
+                      ],
                     ),
                   ),
-                  SizedBox(
-                    width: 10,
+                ),
+              );
+            }
+          } else {
+            if (!value['working']) {
+              listTasks.add(
+                GestureDetector(
+                  onTap: () async {
+                    Constants.showSnackBar(
+                      'You can only view your tasks summary in offline mode.',
+                      true,
+                      context,
+                    );
+                  },
+                  child: new Container(
+                    padding: EdgeInsets.all(15),
+                    margin: EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.orange[800],
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ),
+                          child: Text(
+                            value['importance'].toString(),
+                            style: TextStyle(
+                              color: Colors.orange[800],
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Expanded(
+                          child: Text(
+                            value['name'],
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Icon(
+                          Icons.edit_rounded,
+                          color: Colors.white,
+                        )
+                      ],
+                    ),
                   ),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: Colors.white,
-                  )
-                ],
-              ),
-            ),
-          ));
+                ),
+              );
+            }
+          }
         });
       });
     }
     setState(() {
       isLoading = false;
+      firstTime = false;
       if (!Constants.hiveDB.get('permissions')) {
         showSettings();
       }
@@ -229,12 +388,14 @@ class _DashboardState extends State<Dashboard> {
     });
     listTasks.clear();
     tasksGroup = [];
-    data = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .collection('tasks')
-        .where('completed', isEqualTo: false)
-        .get();
+    if (firstTime) {
+      data = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection('tasks')
+          .orderBy('importance')
+          .get();
+    }
     tasksGroup = data.docs;
     if (tasksGroup.isEmpty) {
       setState(() {
@@ -256,68 +417,179 @@ class _DashboardState extends State<Dashboard> {
               };
             }
             notificationMessage += '${element['name']}\n';
-            listTasks.add(
-              GestureDetector(
-                onTap: () async {
-                  if (noConnection) {
-                    Constants.showSnackBar(
-                      'You can only view your tasks summary in offline mode.',
-                      true,
-                      context,
-                    );
-                  } else {
-                    var result = await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => AddTask(
+            if (professionalSelected && !element['completed']) {
+              if (element['working']) {
+                listTasks.add(
+                  GestureDetector(
+                    onTap: () async {
+                      if (noConnection) {
+                        Constants.showSnackBar(
+                          'You can only view your tasks summary in offline mode.',
                           true,
-                          element.id,
-                          element['name'],
-                          element['description'],
-                          element['working'],
-                          element['importance'],
-                          element['completed'] ?? false,
-                        ),
-                      ),
-                    );
-                    if (result != null) {
-                      loadTasks();
-                    }
-                  }
-                },
-                child: new Container(
-                  padding: EdgeInsets.all(15),
-                  margin: EdgeInsets.only(bottom: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.orange[800],
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          element['name'],
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                          context,
+                        );
+                      } else {
+                        var result = await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => AddTask(
+                              true,
+                              element.id,
+                              element['name'],
+                              element['description'],
+                              element['working'],
+                              element['importance'],
+                              element['completed'] ?? false,
+                            ),
                           ),
-                        ),
+                        );
+                        if (result != null) {
+                          setState(() {
+                            firstTime = true;
+                          });
+                          loadTasks();
+                        }
+                      }
+                    },
+                    child: new Container(
+                      padding: EdgeInsets.all(15),
+                      margin: EdgeInsets.only(bottom: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.orange[800],
+                        borderRadius: BorderRadius.circular(50),
                       ),
-                      SizedBox(
-                        width: 10,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                            ),
+                            child: Text(
+                              element['importance'].toString(),
+                              style: TextStyle(
+                                color: Colors.orange[800],
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Expanded(
+                            child: Text(
+                              element['name'],
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Icon(
+                            Icons.edit_rounded,
+                            color: Colors.white,
+                          ),
+                        ],
                       ),
-                      Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: Colors.white,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            );
+                );
+              }
+            } else {
+              if (!element['working'] && !element['completed']) {
+                listTasks.add(
+                  GestureDetector(
+                    onTap: () async {
+                      if (noConnection) {
+                        Constants.showSnackBar(
+                          'You can only view your tasks summary in offline mode.',
+                          true,
+                          context,
+                        );
+                      } else {
+                        var result = await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => AddTask(
+                              true,
+                              element.id,
+                              element['name'],
+                              element['description'],
+                              element['working'],
+                              element['importance'],
+                              element['completed'] ?? false,
+                            ),
+                          ),
+                        );
+                        if (result != null) {
+                          setState(() {
+                            firstTime = true;
+                          });
+                          loadTasks();
+                        }
+                      }
+                    },
+                    child: new Container(
+                      padding: EdgeInsets.all(15),
+                      margin: EdgeInsets.only(bottom: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.orange[800],
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                            ),
+                            child: Text(
+                              element['importance'].toString(),
+                              style: TextStyle(
+                                color: Colors.orange[800],
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Expanded(
+                            child: Text(
+                              element['name'],
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Icon(
+                            Icons.edit_rounded,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+            }
           },
         );
         if (!noConnection) {
@@ -327,6 +599,7 @@ class _DashboardState extends State<Dashboard> {
     }
     setState(() {
       isLoading = false;
+      firstTime = false;
       if (!Constants.hiveDB.get('permissions')) {
         showSettings();
       }
@@ -545,7 +818,7 @@ class _DashboardState extends State<Dashboard> {
                                       mainAxisSize: MainAxisSize.max,
                                       children: [
                                         Visibility(
-                                          visible: !isLoading && !isEmpty,
+                                          visible: !isLoading,
                                           child: Text(
                                             'Fill Your Task',
                                             style: TextStyle(
@@ -556,7 +829,120 @@ class _DashboardState extends State<Dashboard> {
                                           ),
                                         ),
                                         SizedBox(
-                                          height: 15,
+                                          height: 5,
+                                        ),
+                                        Visibility(
+                                          visible: !isLoading,
+                                          child: Container(
+                                            padding: EdgeInsets.all(2),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                color: Colors.black,
+                                                width: 1,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(100),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    loadTasks();
+                                                    setState(() {
+                                                      professionalSelected =
+                                                          true;
+                                                    });
+                                                  },
+                                                  child: Container(
+                                                    padding: EdgeInsets.all(10),
+                                                    alignment: Alignment.center,
+                                                    decoration: BoxDecoration(
+                                                      color:
+                                                          professionalSelected
+                                                              ? Colors.black
+                                                              : Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              100),
+                                                    ),
+                                                    child: Text(
+                                                      'Professional',
+                                                      style: TextStyle(
+                                                        color:
+                                                            professionalSelected
+                                                                ? Colors.white
+                                                                : Colors.black,
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  width: 5,
+                                                ),
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    loadTasks();
+                                                    setState(() {
+                                                      professionalSelected =
+                                                          false;
+                                                    });
+                                                  },
+                                                  child: Container(
+                                                    padding: EdgeInsets.all(10),
+                                                    alignment: Alignment.center,
+                                                    decoration: BoxDecoration(
+                                                      color:
+                                                          professionalSelected
+                                                              ? Colors.white
+                                                              : Colors.black,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              100),
+                                                    ),
+                                                    child: Text(
+                                                      'Personal',
+                                                      style: TextStyle(
+                                                        color:
+                                                            professionalSelected
+                                                                ? Colors.black
+                                                                : Colors.white,
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 5,
+                                        ),
+                                        Visibility(
+                                          visible: !isLoading && !isEmpty,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              GestureDetector(
+                                                onTap: () {},
+                                                child: Container(),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 5,
                                         ),
                                         Visibility(
                                           visible: !isLoading && !isEmpty,
@@ -567,7 +953,7 @@ class _DashboardState extends State<Dashboard> {
                                         Visibility(
                                           visible: !isLoading && isEmpty,
                                           child: Text(
-                                            'You have not created any tasks yet.',
+                                            'Yay! All your tasks are completed.\nCreate a new task.',
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
                                               color: Colors.grey,
@@ -649,6 +1035,9 @@ class _DashboardState extends State<Dashboard> {
                                       ),
                                     );
                                     if (result != null) {
+                                      setState(() {
+                                        firstTime = true;
+                                      });
                                       loadTasks();
                                     }
                                   }
